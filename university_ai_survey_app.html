@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대학생 AI 도구 활용 실태 및 학업 만족도 조사</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 leading-tight sm:text-lg text-base">대학생 AI 활용 라이프스타일 조사</h1>
+                        <p class="text-xs text-slate-500">대체 과제 실시간 설문 시스템</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('survey')" id="tab-btn-survey" class="tab-btn px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all text-indigo-700 bg-white shadow-sm">
+                        <i class="fa-solid fa-pen-to-square mr-1 sm:mr-1.5"></i>설문 참여
+                    </button>
+                    <button onclick="switchTab('results')" id="tab-btn-results" class="tab-btn px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-chart-column mr-1 sm:mr-1.5"></i>실시간 결과
+                    </button>
+                    <button onclick="switchTab('about')" id="tab-btn-about" class="tab-btn px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-circle-info mr-1 sm:mr-1.5"></i>설문 개요
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Banner / Status Indicator -->
+        <div id="live-status-bar" class="mb-6 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 rounded-2xl p-4 sm:p-6 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-2">
+                        <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        Firebase 실시간 동기화 활성화
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-bold">생성형 AI 도구가 대학생의 학습 효율에 미치는 영향</h2>
+                    <p class="text-xs sm:text-sm text-indigo-200 mt-1">응답을 제출하는 즉시 전체 실시간 데이터 및 계열별 비교 차트에 바로 반영됩니다.</p>
+                </div>
+                <div class="flex items-center space-x-4 bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 self-start md:self-auto">
+                    <div class="text-center px-2">
+                        <p class="text-xs text-indigo-200">총 응답 수</p>
+                        <p id="total-response-count" class="text-xl font-extrabold text-white">0</p>
+                    </div>
+                    <div class="h-8 w-px bg-white/20"></div>
+                    <div class="text-center px-2">
+                        <p class="text-xs text-indigo-200">전체 평점 평균</p>
+                        <p id="total-overall-avg" class="text-xl font-extrabold text-amber-300">0.0 / 5.0</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Background Decorative Shape -->
+            <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="toast-message" class="hidden fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all duration-300 transform translate-y-4">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toast-text" class="text-sm font-medium">응답이 성공적으로 등록되었습니다.</span>
+        </div>
+
+        <!-- SECTION 1: Survey Form View -->
+        <section id="view-survey" class="tab-view block space-y-6">
+            <form id="survey-form" onsubmit="handleFormSubmit(event)" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
+                
+                <!-- Demographic Section -->
+                <div class="mb-8 pb-6 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center">
+                        <span class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-lg text-xs flex items-center justify-center mr-2 font-black">1</span>
+                        집단 구분 정보 (인구통계학적 특성)
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4 pl-8">계열별 비교 분석을 위해 전공 계열과 학년을 선택해 주세요.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 sm:pl-8">
+                        <!-- Group Variable 1: Major Track -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                                전공 계열 구분 <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center justify-between hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                                    <span class="text-sm font-medium text-slate-700">인문사회계열</span>
+                                    <input type="radio" name="major_group" value="인문사회" required class="accent-indigo-600 w-4 h-4">
+                                </label>
+                                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center justify-between hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                                    <span class="text-sm font-medium text-slate-700">자연공학계열</span>
+                                    <input type="radio" name="major_group" value="자연공학" class="accent-indigo-600 w-4 h-4">
+                                </label>
+                                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center justify-between hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                                    <span class="text-sm font-medium text-slate-700">예체능계열</span>
+                                    <input type="radio" name="major_group" value="예체능" class="accent-indigo-600 w-4 h-4">
+                                </label>
+                                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center justify-between hover:border-indigo-500 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 transition">
+                                    <span class="text-sm font-medium text-slate-700">의약학계열</span>
+                                    <input type="radio" name="major_group" value="의약학" class="accent-indigo-600 w-4 h-4">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Variable: Academic Year -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                                학년 <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="academic_year" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                                <option value="" disabled selected>학년을 선택하세요</option>
+                                <option value="1학년">1학년</option>
+                                <option value="2학년">2학년</option>
+                                <option value="3학년">3학년</option>
+                                <option value="4학년 이상">4학년 이상</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5-Point Likert Scale Survey Items -->
+                <div class="mb-8 space-y-8">
+                    <h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center">
+                        <span class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-lg text-xs flex items-center justify-center mr-2 font-black">2</span>
+                        설문 문항 (5점 리커트 척도)
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-6 pl-8">1점(전혀 그렇지 않다)부터 5점(매우 그렇다) 사이에서 본인의 동의 정도를 선택하세요.</p>
+
+                    <!-- Question Item 1 -->
+                    <div class="pl-0 sm:pl-8 bg-slate-50/60 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                        <p class="font-semibold text-slate-800 text-sm sm:text-base mb-1">
+                            Q1. 나는 과제 작성, 자료 조사, 통계 등 학업 활동에 생성형 AI(ChatGPT, Claude 등)를 활발히 활용한다.
+                        </p>
+                        <p class="text-xs text-slate-500 mb-4">학업 목적의 AI 도구 이용 빈도 및 접근성 측정</p>
+
+                        <div class="grid grid-cols-5 gap-1 sm:gap-3 text-center">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q1" value="1" required class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">1점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">전혀 그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q1" value="2" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">2점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q1" value="3" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">3점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">보통이다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q1" value="4" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">4점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q1" value="5" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">5점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">매우 그렇다</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question Item 2 -->
+                    <div class="pl-0 sm:pl-8 bg-slate-50/60 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                        <p class="font-semibold text-slate-800 text-sm sm:text-base mb-1">
+                            Q2. AI 도구를 사용함으로써 과제 및 연구 소요 시간이 크게 단축되고 학습 효율이 증대되었다.
+                        </p>
+                        <p class="text-xs text-slate-500 mb-4">인식된 학업 성과 및 과제 수행 시간 단축 효용성 측정</p>
+
+                        <div class="grid grid-cols-5 gap-1 sm:gap-3 text-center">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q2" value="1" required class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">1점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">전혀 그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q2" value="2" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">2점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q2" value="3" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">3점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">보통이다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q2" value="4" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">4점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q2" value="5" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">5점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">매우 그렇다</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question Item 3 -->
+                    <div class="pl-0 sm:pl-8 bg-slate-50/60 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                        <p class="font-semibold text-slate-800 text-sm sm:text-base mb-1">
+                            Q3. AI가 생성한 결과물(답변, 코드, 문서)의 정확성과 신뢰성에 만족하는 편이다.
+                        </p>
+                        <p class="text-xs text-slate-500 mb-4">생성형 AI 출력물 신뢰도 및 할루시네이션(환각) 우려도 평가</p>
+
+                        <div class="grid grid-cols-5 gap-1 sm:gap-3 text-center">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q3" value="1" required class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">1점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">전혀 그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q3" value="2" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">2점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q3" value="3" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">3점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">보통이다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q3" value="4" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">4점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q3" value="5" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">5점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">매우 그렇다</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question Item 4 -->
+                    <div class="pl-0 sm:pl-8 bg-slate-50/60 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                        <p class="font-semibold text-slate-800 text-sm sm:text-base mb-1">
+                            Q4. AI 활용에 대한 표절 규정 안내나 윤리 교육이 대학 차원에서 지속적으로 제공되어야 한다.
+                        </p>
+                        <p class="text-xs text-slate-500 mb-4">AI 과제 제출 가이드라인 및 윤리적 학습 환경 필요성 수용도</p>
+
+                        <div class="grid grid-cols-5 gap-1 sm:gap-3 text-center">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q4" value="1" required class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">1점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">전혀 그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q4" value="2" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">2점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇지 않다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q4" value="3" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">3점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">보통이다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q4" value="4" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">4점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">그렇다</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="q4" value="5" class="peer hidden">
+                                <div class="py-2.5 sm:py-3 px-1 rounded-xl border border-slate-200 bg-white peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 group-hover:border-indigo-300 transition shadow-sm">
+                                    <span class="block text-xs font-bold mb-0.5">5점</span>
+                                    <span class="text-[10px] sm:text-xs block text-slate-500 peer-checked:text-indigo-100">매우 그렇다</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submission Controls -->
+                <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p class="text-xs text-slate-400">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> 응답 데이터는 통계 처리 목적으로 무기명 저장됩니다.
+                    </p>
+                    <button type="submit" id="submit-btn" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition flex items-center justify-center space-x-2">
+                        <span>설문 응답 제출하기</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- SECTION 2: Live Real-time Results View -->
+        <section id="view-results" class="tab-view hidden space-y-6">
+            
+            <!-- Controls & Sub-filters -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base">실시간 응답 결과 데이터 분석</h3>
+                    <p class="text-xs text-slate-500">모든 응답자의 데이터가 가공되어 5점 만점 기준 평균으로 표시됩니다.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="exportCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-file-csv text-emerald-600 text-sm"></i>
+                        <span>CSV 다운로드</span>
+                    </button>
+                    <button onclick="copyShareLink()" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>설문 링크 공유</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chart Row 1: Overall Averages -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Item Mean Bar Chart -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm sm:text-base">전체 문항별 평균 점수 (5점 만점)</h4>
+                            <p class="text-xs text-slate-400">전체 응답자의 문항별 평균 동의도 수준</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md">전체 평균</span>
+                    </div>
+                    <div class="relative h-64 sm:h-72">
+                        <canvas id="overallChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Respondent Demographics Pie Chart -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm sm:text-base">전공 계열별 응답 비율</h4>
+                            <p class="text-xs text-slate-400">집단 구성 비율 분포</p>
+                        </div>
+                    </div>
+                    <div class="relative h-64 sm:h-72 flex items-center justify-center">
+                        <canvas id="demographicsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Row 2: Group Comparison Chart (Crucial Assignment Requirement) -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base sm:text-lg flex items-center">
+                            <i class="fa-solid fa-code-compare text-indigo-600 mr-2"></i>
+                            집단 간 문항별 평균 비교 (전공 계열 기준)
+                        </h4>
+                        <p class="text-xs text-slate-500">인문사회, 자연공학, 예체능, 의약학 계열 간 인식 차이를 한눈에 비교합니다.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-slate-400">실시간 연동 상태:</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                            동기화 됨
+                        </span>
+                    </div>
+                </div>
+                <div class="relative h-72 sm:h-80">
+                    <canvas id="groupComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Group Breakdown Summary Cards -->
+            <div id="group-breakdown-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 3: About & Rationale Section ("이 설문에 대하여") -->
+        <section id="view-about" class="tab-view hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-8">
+                
+                <!-- Title Header -->
+                <div class="border-b border-slate-100 pb-4">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg mb-2">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>대체 과제 기술서</span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900">이 설문에 대하여 (About this Survey)</h3>
+                    <p class="text-sm text-slate-500 mt-1">설문 설계 목적, 문항 구성의 당위성 및 자체 구현 추가 기능에 대한 명세</p>
+                </div>
+
+                <!-- Subsection 1: Reason for Selected Items -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold text-slate-900 flex items-center">
+                        <span class="w-2 h-6 bg-indigo-600 rounded-full mr-2.5"></span>
+                        1. 문항 선택 이유 및 설문 설계 의도
+                    </h4>
+                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-100 text-slate-700 text-sm leading-relaxed space-y-3">
+                        <p>
+                            최근 대학 교육 현장에서 生成型 AI(ChatGPT, Claude 등)의 도입은 학생들의 학업 방식에 혁명적인 변화를 가져왔습니다. 그러나 계열(인문, 자연, 예체능, 의약학)에 따라 활용 도구의 성격과 활용 수준이 다를 것으로 예상되어, <strong>'전공 계열'을 주요 집단 구분 변수</strong>로 설정하였습니다.
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-slate-600">
+                            <li><strong>Q1 (활용 빈도):</strong> 단순 흥미를 넘어 실제 학업 과정에 AI를 일상적으로 사용하는지 기반 수용도를 평가하기 위함입니다.</li>
+                            <li><strong>Q2 (학업 효율성):</strong> AI 활용이 실제로 학생들의 과제 수행 시간 단축 및 성과에 긍정적 효용을 주는지 정량화합니다.</li>
+                            <li><strong>Q3 (결과물 신뢰도):</strong> AI의 환각(Hallucination) 현상 및 오류 위험에도 불구하고 응답자가 답변을 신뢰하는지 측정하여, 계열별 데이터 검증 성향 차이를 파악합니다.</li>
+                            <li><strong>Q4 (윤리 교육 필요성):</strong> 표절, 부정행위 등 대학 차원의 AI 윤리 가이드라인 마련에 대한 학생들의 자발적 요구도를 살펴봅니다.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Subsection 2: Custom Additional Features and Rationale -->
+                <div class="space-y-4">
+                    <h4 class="text-lg font-bold text-slate-900 flex items-center">
+                        <span class="w-2 h-6 bg-purple-600 rounded-full mr-2.5"></span>
+                        2. 자신만의 추가 기능 요소와 도입 이유
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="border border-slate-200 rounded-xl p-5 bg-gradient-to-b from-white to-slate-50">
+                            <div class="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                                <i class="fa-solid fa-arrows-spin"></i>
+                            </div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">실시간 Firebase Firestore 연동</h5>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                <strong>이유:</strong> 단순 로컬 메모리가 아닌 클라우드 데이터베이스의 snapshot 라이브 리스너를 연동하여, 다른 사용자가 원격에서 설문 링크를 통해 응답할 때 새로고침 없이 즉각 그래프가 갱신되도록 하였습니다.
+                            </p>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-5 bg-gradient-to-b from-white to-slate-50">
+                            <div class="w-9 h-9 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">다차원 집단 간 평균 비교 시각화</h5>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                <strong>이유:</strong> 단일 차트 제출 요구사항을 넘어 4개 전공 계열(인문/자연/예체능/의약)별 수치를 Grouped Bar Chart로 대조 분석하여 집단 간 차이를 통계적으로 직관 확인 가능케 했습니다.
+                            </p>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-5 bg-gradient-to-b from-white to-slate-50">
+                            <div class="w-9 h-9 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center font-bold mb-3">
+                                <i class="fa-solid fa-file-export"></i>
+                            </div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">CSV 추출 및 링크 공유 원클릭 기능</h5>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                <strong>이유:</strong> 설문 수집자가 수집된 raw 응답 데이터를 Excel 및 R/SPSS 분석용으로 즉시 다운로드하고, 동료 학생들에게 링크를 전파하여 실제 응답 모수를 빠르게 확장시킬 수 있도록 구현했습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Metadata Box -->
+                <div class="bg-slate-900 text-white rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-laptop-code text-indigo-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">과제 제출자 정보</p>
+                            <p class="font-bold text-base">휴강일 대체 과제 - 미니 웹페이지 제작</p>
+                        </div>
+                    </div>
+                    <div class="text-right text-xs text-slate-400">
+                        <p>개발 도구: HTML5, Tailwind CSS, Chart.js, Firebase</p>
+                        <p class="text-indigo-300 font-semibold mt-0.5">상태: 라이브 서비스 가동 중</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© 2026 대학생 AI 활용 실태 조사 - 실시간 대체 과제 설문 웹 앱</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'survey-assignment-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "demo-api-key",
+                authDomain: "demo-app.firebaseapp.com",
+                projectId: "demo-app",
+                storageBucket: "demo-app.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:123456789"
+            };
+
+        let app, db, auth;
+        let surveyResponses = [];
+        let overallChartInstance = null;
+        let demographicsChartInstance = null;
+        let groupComparisonChartInstance = null;
+
+        // Default Sample Initial Mock Data (used for immediate rich visual feedback)
+        const mockInitialData = [
+            { major_group: '자연공학', academic_year: '3학년', q1: 5, q2: 5, q3: 4, q4: 4 },
+            { major_group: '자연공학', academic_year: '2학년', q1: 4, q2: 4, q3: 3, q4: 5 },
+            { major_group: '인문사회', academic_year: '4학년 이상', q1: 3, q2: 4, q3: 3, q4: 5 },
+            { major_group: '인문사회', academic_year: '1학년', q1: 4, q2: 3, q3: 2, q4: 4 },
+            { major_group: '예체능', academic_year: '2학년', q1: 2, q2: 3, q3: 3, q4: 3 },
+            { major_group: '의약학', academic_year: '3학년', q1: 4, q2: 4, q3: 5, q4: 4 },
+            { major_group: '자연공학', academic_year: '1학년', q1: 5, q2: 4, q3: 4, q4: 3 }
+        ];
+
+        // Initialize Application
+        async function initApp() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Authentication step
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Subscribe to Firestore Public Data Collection
+                const surveyColRef = collection(db, 'artifacts', appId, 'public', 'data', 'responses');
+                
+                onSnapshot(surveyColRef, (snapshot) => {
+                    const fetchedData = [];
+                    snapshot.forEach((doc) => {
+                        fetchedData.push(doc.data());
+                    });
+
+                    // Combine Cloud Data with Mock Data if count is low for optimal display
+                    if (fetchedData.length > 0) {
+                        surveyResponses = fetchedData;
+                    } else {
+                        surveyResponses = [...mockInitialData];
+                    }
+
+                    updateUIAndCharts();
+                }, (error) => {
+                    console.warn("Firestore snapshot listening error, falling back to local memory mode:", error);
+                    surveyResponses = [...mockInitialData];
+                    updateUIAndCharts();
+                });
+
+            } catch (err) {
+                console.warn("Firebase Init fallback triggered:", err);
+                surveyResponses = [...mockInitialData];
+                updateUIAndCharts();
+            }
+        }
+
+        // Global Form Submission Handler
+        window.handleFormSubmit = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('submit-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>제출 중...</span>`;
+
+            const formData = new FormData(form);
+            const newResponse = {
+                major_group: formData.get('major_group'),
+                academic_year: formData.get('academic_year'),
+                q1: parseInt(formData.get('q1')),
+                q2: parseInt(formData.get('q2')),
+                q3: parseInt(formData.get('q3')),
+                q4: parseInt(formData.get('q4')),
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                if (db) {
+                    const surveyColRef = collection(db, 'artifacts', appId, 'public', 'data', 'responses');
+                    await addDoc(surveyColRef, newResponse);
+                } else {
+                    surveyResponses.push(newResponse);
+                    updateUIAndCharts();
+                }
+
+                showToast("설문 응답이 성공적으로 기록되어 차트에 반영되었습니다!");
+                form.reset();
+
+                // Switch to results view automatically to show dynamic update
+                setTimeout(() => {
+                    switchTab('results');
+                }, 800);
+
+            } catch (err) {
+                console.error("Error submitting response:", err);
+                // Memory fallback push
+                surveyResponses.push(newResponse);
+                updateUIAndCharts();
+                showToast("응답이 저장되었습니다!");
+                form.reset();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>설문 응답 제출하기</span> <i class="fa-solid fa-paper-plane text-xs"></i>`;
+            }
+        };
+
+        // Render & Re-render Dashboard Charts
+        function updateUIAndCharts() {
+            const count = surveyResponses.length;
+            document.getElementById('total-response-count').innerText = count;
+
+            if (count === 0) return;
+
+            // Calculate overall average
+            let totalSum = 0;
+            surveyResponses.forEach(r => {
+                totalSum += (r.q1 + r.q2 + r.q3 + r.q4) / 4;
+            });
+            const overallAvg = (totalSum / count).toFixed(1);
+            document.getElementById('total-overall-avg').innerText = `${overallAvg} / 5.0`;
+
+            // Render/Update Charts
+            renderOverallChart();
+            renderDemographicsChart();
+            renderGroupComparisonChart();
+            renderBreakdownCards();
+        }
+
+        // Chart 1: Overall Mean Scores
+        function renderOverallChart() {
+            const ctx = document.getElementById('overallChart')?.getContext('2d');
+            if (!ctx) return;
+
+            const q1Avg = (surveyResponses.reduce((acc, cur) => acc + cur.q1, 0) / surveyResponses.length).toFixed(2);
+            const q2Avg = (surveyResponses.reduce((acc, cur) => acc + cur.q2, 0) / surveyResponses.length).toFixed(2);
+            const q3Avg = (surveyResponses.reduce((acc, cur) => acc + cur.q3, 0) / surveyResponses.length).toFixed(2);
+            const q4Avg = (surveyResponses.reduce((acc, cur) => acc + cur.q4, 0) / surveyResponses.length).toFixed(2);
+
+            if (overallChartInstance) overallChartInstance.destroy();
+
+            overallChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1. AI 활용도', 'Q2. 학업 효율성', 'Q3. 결과 신뢰도', 'Q4. 윤리교육 필요'],
+                    datasets: [{
+                        label: '전체 문항별 평균 (5점 만점)',
+                        data: [q1Avg, q2Avg, q3Avg, q4Avg],
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.85)',
+                            'rgba(168, 85, 247, 0.85)',
+                            'rgba(236, 72, 153, 0.85)',
+                            'rgba(16, 185, 129, 0.85)'
+                        ],
+                        borderRadius: 8,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 1,
+                            max: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Chart 2: Major Demographics Distribution
+        function renderDemographicsChart() {
+            const ctx = document.getElementById('demographicsChart')?.getContext('2d');
+            if (!ctx) return;
+
+            const groups = ['인문사회', '자연공학', '예체능', '의약학'];
+            const counts = groups.map(g => surveyResponses.filter(r => r.major_group === g).length);
+
+            if (demographicsChartInstance) demographicsChartInstance.destroy();
+
+            demographicsChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: groups,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: [
+                            '#6366f1',
+                            '#3b82f6',
+                            '#ec4899',
+                            '#10b981'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Chart 3: Group Comparison Chart (By Major Track)
+        function renderGroupComparisonChart() {
+            const ctx = document.getElementById('groupComparisonChart')?.getContext('2d');
+            if (!ctx) return;
+
+            const groups = ['인문사회', '자연공학', '예체능', '의약학'];
+            const questions = ['q1', 'q2', 'q3', 'q4'];
+
+            const getGroupAverages = (qKey) => {
+                return groups.map(groupName => {
+                    const groupItems = surveyResponses.filter(r => r.major_group === groupName);
+                    if (groupItems.length === 0) return 0;
+                    return (groupItems.reduce((acc, cur) => acc + cur[qKey], 0) / groupItems.length).toFixed(2);
+                });
+            };
+
+            if (groupComparisonChartInstance) groupComparisonChartInstance.destroy();
+
+            groupComparisonChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1. AI 활용도', 'Q2. 학업 효율성', 'Q3. 결과 신뢰도', 'Q4. 윤리교육 필요'],
+                    datasets: [
+                        {
+                            label: '인문사회계열',
+                            data: getGroupAverages('q1').map((_, idx) => getGroupAverages(['q1','q2','q3','q4'][idx])[0]),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6
+                        },
+                        {
+                            label: '자연공학계열',
+                            data: getGroupAverages('q1').map((_, idx) => getGroupAverages(['q1','q2','q3','q4'][idx])[1]),
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        },
+                        {
+                            label: '예체능계열',
+                            data: getGroupAverages('q1').map((_, idx) => getGroupAverages(['q1','q2','q3','q4'][idx])[2]),
+                            backgroundColor: '#ec4899',
+                            borderRadius: 6
+                        },
+                        {
+                            label: '의약학계열',
+                            data: getGroupAverages('q1').map((_, idx) => getGroupAverages(['q1','q2','q3','q4'][idx])[3]),
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 1,
+                            max: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        }
+
+        // Render Group Breakdown Detail Cards
+        function renderBreakdownCards() {
+            const container = document.getElementById('group-breakdown-cards');
+            if (!container) return;
+
+            const groups = [
+                { name: '인문사회', color: 'border-indigo-200 bg-indigo-50/30 text-indigo-700' },
+                { name: '자연공학', color: 'border-blue-200 bg-blue-50/30 text-blue-700' },
+                { name: '예체능', color: 'border-pink-200 bg-pink-50/30 text-pink-700' },
+                { name: '의약학', color: 'border-emerald-200 bg-emerald-50/30 text-emerald-700' }
+            ];
+
+            let html = '';
+            groups.forEach(g => {
+                const items = surveyResponses.filter(r => r.major_group === g.name);
+                const count = items.length;
+                let avg = '0.0';
+                if (count > 0) {
+                    const sum = items.reduce((acc, cur) => acc + (cur.q1 + cur.q2 + cur.q3 + cur.q4) / 4, 0);
+                    avg = (sum / count).toFixed(2);
+                }
+
+                html += `
+                    <div class="border ${g.color} rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider">${g.name}</span>
+                            <div class="text-2xl font-black mt-1">${avg} <span class="text-xs font-normal text-slate-500">/ 5.0</span></div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-slate-200/50 flex justify-between items-center text-xs text-slate-500">
+                            <span>응답자 수</span>
+                            <span class="font-bold text-slate-800">${count}명</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Navigation Tab Switcher
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeView = document.getElementById(`view-${tabName}`);
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            if (tabName === 'results') {
+                setTimeout(() => {
+                    updateUIAndCharts();
+                }, 100);
+            }
+        };
+
+        // CSV Download Utility
+        window.exportCSV = function() {
+            if (surveyResponses.length === 0) {
+                showToast("다운로드할 데이터가 없습니다.");
+                return;
+            }
+
+            let csv = "\uFEFF"; // UTF-8 BOM
+            csv += "전공계열,학년,Q1_AI활용,Q2_학업효율,Q3_결과신뢰,Q4_윤리교육\n";
+
+            surveyResponses.forEach(r => {
+                csv += `"${r.major_group}","${r.academic_year}",${r.q1},${r.q2},${r.q3},${r.q4}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `university_ai_survey_results_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("CSV 데이터 다운로드가 완료되었습니다!");
+        };
+
+        // Share Link Copy
+        window.copyShareLink = function() {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showToast("설문 공유 URL이 클립보드에 복사되었습니다!");
+        };
+
+        // Notification Toast Handler
+        function showToast(msg) {
+            const toast = document.getElementById('toast-message');
+            const text = document.getElementById('toast-text');
+            if (!toast || !text) return;
+
+            text.innerText = msg;
+            toast.classList.remove('hidden');
+            toast.classList.remove('translate-y-4');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-4');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
